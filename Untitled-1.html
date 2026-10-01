@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projet Station Météo LoRa - Présentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 60px 80px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: slideIn 0.5s ease;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 1.2em;
+            opacity: 0.7;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid white;
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.8em;
+            margin: 25px 0 15px 0;
+            color: #ffd700;
+        }
+
+        p, li {
+            font-size: 1.4em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.8em;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding-left: 40px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .highlight {
+            background: rgba(255, 215, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 10px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .big-number {
+            font-size: 5em;
+            font-weight: bold;
+            color: #ffd700;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+        }
+
+        th {
+            background: rgba(255,255,255,0.2);
+            font-weight: bold;
+        }
+
+        .schema {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 40px 0;
+            font-size: 1.3em;
+        }
+
+        .station-box {
+            background: rgba(255,255,255,0.15);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 250px;
+        }
+
+        .arrow {
+            font-size: 3em;
+            color: #ffd700;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.05);
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: #ffd700;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 30px;
+            }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.8em; }
+            p, li { font-size: 1.1em; }
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            .schema {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+                margin: 20px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- Slide 1: Titre -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-number">1/8</div>
+            <div class="content">
+                <h1>🌡️ Station Météo LoRa</h1>
+                <p class="subtitle">Système de Surveillance Météorologique Longue Distance</p>
+                <div class="big-number">Tunis ↔ La Marsa</div>
+                <p class="subtitle">Communication sans fil sur 18 km</p>
+                <div style="text-align: center; margin-top: 40px;">
+                    <p style="font-size: 1.2em; opacity: 0.8;">Mini-Projet IoT - Technologie LoRa</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Problématique -->
+        <div class="slide" data-slide="2">
+            <div class="slide-number">2/8</div>
+            <div class="content">
+                <h2>🎯 Problématique</h2>
+                <div class="two-column">
+                    <div class="card">
+                        <div class="icon">❌</div>
+                        <h3>Défis Actuels</h3>
+                        <ul>
+                            <li>Surveillance à distance difficile</li>
+                            <li>Internet pas toujours disponible</li>
+                            <li>Coûts d'abonnement élevés</li>
+                            <li>Portée limitée WiFi/Bluetooth</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="icon">✅</div>
+                        <h3>Notre Solution</h3>
+                        <ul>
+                            <li>Communication LoRa 18 km</li>
+                            <li>Sans Internet nécessaire</li>
+                            <li>Aucun coût mensuel</li>
+                            <li>Données météo temps réel</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Architecture -->
+        <div class="slide" data-slide="3">
+            <div class="slide-number">3/8</div>
+            <div class="content">
+                <h2>📡 Architecture du Système</h2>
+                <div class="schema">
+                    <div class="station-box">
+                        <div class="icon">📤</div>
+                        <h3>TUNIS</h3>
+                        <p>Station Émettrice</p>
+                        <ul style="text-align: left; font-size: 0.9em;">
+                            <li>Heltec LoRa ESP32</li>
+                            <li>Capteur DHT11</li>
+                            <li>LED verte</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="arrow">→ 📡 →</div>
+                    
+                    <div class="station-box">
+                        <div class="icon">📥</div>
+                        <h3>LA MARSA</h3>
+                        <p>Station Réceptrice</p>
+                        <ul style="text-align: left; font-size: 0.9em;">
+                            <li>Heltec LoRa ESP32</li>
+                            <li>LED rouge/verte</li>
+                            <li>Écran OLED</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 30px;">
+                    <span class="highlight">Distance: 18 km</span> | 
+                    <span class="highlight">Fréquence: 868 MHz</span> | 
+                    <span class="highlight">Intervalle: 30 secondes</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 4: Matériel -->
+        <div class="slide" data-slide="4">
+            <div class="slide-number">4/8</div>
+            <div class="content">
+                <h2>🔧 Matériel Utilisé</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Composant</th>
+                            <th>Quantité</th>
+                            <th>Fonction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🔲 Heltec LoRa ESP32</td>
+                            <td>x2</td>
+                            <td>Communication LoRa + Traitement</td>
+                        </tr>
+                        <tr>
+                            <td>🌡️ Capteur DHT11</td>
+                            <td>x1</td>
+                            <td>Mesure Température & Humidité</td>
+                        </tr>
+                        <tr>
+                            <td>💡 LED Rouge</td>
+                            <td>x1</td>
+                            <td>Indication réception données</td>
+                        </tr>
+                        <tr>
+                            <td>💡 LED Verte</td>
+                            <td>x2</td>
+                            <td>Statut émission/connexion</td>
+                        </tr>
+                        <tr>
+                            <td>⚡ Résistances 220Ω</td>
+                            <td>x3</td>
+                            <td>Protection LEDs</td>
+                        </tr>
+                        <tr>
+                            <td>🔌 Breadboard + Fils</td>
+                            <td>-</td>
+                            <td>Connexions électriques</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 5: Données Transmises -->
+        <div class="slide" data-slide="5">
+            <div class="slide-number">5/8</div>
+            <div class="content">
+                <h2>📊 Données Transmises</h2>
+                <div class="two-column">
+                    <div class="card">
+                        <h3>📤 Émission (Tunis)</h3>
+                        <ul>
+                            <li><strong>Température</strong> : °C (précision 0.1)</li>
+                            <li><strong>Humidité</strong> : % (précision 1)</li>
+                            <li><strong>ID Station</strong> : "TUNIS"</li>
+                            <li><strong>Compteur</strong> : Numéro paquet</li>
+                        </ul>
+                        <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+                            📡 Envoi toutes les 30 secondes<br>
+                            💾 Format: CSV (léger)<br>
+                            🔐 CRC activé (fiabilité)
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3>📥 Réception (La Marsa)</h3>
+                        <ul>
+                            <li><strong>Affichage OLED</strong> : Temp & Humidité</li>
+                            <li><strong>RSSI</strong> : Force du signal</li>
+                            <li><strong>Compteur</strong> : Paquets reçus</li>
+                            <li><strong>Taux réussite</strong> : % de succès</li>
+                        </ul>
+                        <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+                            🔴 LED rouge = Réception<br>
+                            🟢 LED verte = Connexion OK<br>
+                            📺 Dashboard web temps réel
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Technologie LoRa -->
+        <div class="slide" data-slide="6">
+            <div class="slide-number">6/8</div>
+            <div class="content">
+                <h2>🚀 Pourquoi LoRa ?</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Avantages Techniques</h3>
+                        <ul>
+                            <li><strong>Portée</strong>: 10-15 km (urbain), 30+ km (rural)</li>
+                            <li><strong>Pénétration</strong>: Traverse les obstacles</li>
+                            <li><strong>Consommation</strong>: Ultra-faible (années sur batterie)</li>
+                            <li><strong>Coût</strong>: Aucun abonnement requis</li>
+                            <li><strong>Fiabilité</strong>: Résistant aux interférences</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Configuration Optimale</h3>
+                        <div class="card" style="background: rgba(255,215,0,0.2);">
+                            <p><strong>Spreading Factor:</strong> SF12 (max portée)</p>
+                            <p><strong>Bandwidth:</strong> 125 kHz</p>
+                            <p><strong>Coding Rate:</strong> 4/5</p>
+                            <p><strong>TX Power:</strong> 20 dBm (max)</p>
+                            <p><strong>Fréquence:</strong> 868 MHz (EU)</p>
+                        </div>
+                        <p style="margin-top: 20px; text-align: center;">
+                            <span class="highlight">Portée optimisée pour 18 km</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Applications -->
+        <div class="slide" data-slide="7">
+            <div class="slide-number">7/8</div>
+            <div class="content">
+                <h2>💡 Applications Réelles</h2>
+                <div class="two-column">
+                    <div class="card">
+                        <div class="icon">🌾</div>
+                        <h3>Agriculture</h3>
+                        <p>Surveillance des conditions météo dans les fermes éloignées, optimisation irrigation</p>
+                    </div>
+                    <div class="card">
+                        <div class="icon">🏠</div>
+                        <h3>Domotique</h3>
+                        <p>Monitoring résidences secondaires sans Internet fixe</p>
+                    </div>
+                    <div class="card">
+                        <div class="icon">🏭</div>
+                        <h3>Industrie</h3>
+                        <p>Surveillance entrepôts frigorifiques, sites industriels distants</p>
+                    </div>
+                    <div class="card">
+                        <div class="icon">🚨</div>
+                        <h3>Sécurité</h3>
+                        <p>Alertes incendie, systèmes d'urgence sans réseau GSM</p>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 30px; font-size: 1.2em;">
+                    <span class="highlight">Cas d'usage multiples en Tunisie : Agriculture (Nabeul, Cap Bon), Tourisme (Hammamet), Industrie (Ben Arous)</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Résultats & Conclusion -->
+        <div class="slide" data-slide="8">
+            <div class="slide-number">8/8</div>
+            <div class="content">
+                <h2>✅ Résultats & Conclusion</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Objectifs Atteints</h3>
+                        <ul>
+                            <li>Communication 18 km validée</li>
+                            <li>Transmission temps réel fiable</li>
+                            <li>Dashboard fonctionnel</li>
+                            <li>Faible consommation énergétique</li>
+                            <li>Solution sans Internet</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Compétences Développées</h3>
+                        <ul>
+                            <li>IoT & Systèmes embarqués</li>
+                            <li>Communication RF (LoRa)</li>
+                            <li>Programmation C++/JavaScript</li>
+                            <li>Traitement de données</li>
+                            <li>Interfaces utilisateur</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="margin-top: 40px; text-align: center;">
+                    <h3 style="color: #ffd700;">🎯 Perspectives</h3>
+                    <p style="font-size: 1.2em;">
+                        Extension possible : Réseau multi-capteurs, alertes SMS, stockage cloud, 
+                        intégration LoRaWAN, panneau solaire autonome
+                    </p>
+                    <div class="big-number" style="font-size: 3em; margin-top: 30px;">
+                        Merci ! 🙏
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="previousSlide()">◀ Précédent</button>
+        <button class="btn" onclick="nextSlide()">Suivant ▶</button>
+    </div>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            
+            if (n > totalSlides) {
+                currentSlide = 1;
+            }
+            if (n < 1) {
+                currentSlide = totalSlides;
+            }
+            
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            slides[currentSlide - 1].classList.add('active');
+            
+            // Update progress bar
+            const progress = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide--;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Météo LoRa - Tunisie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #b5d697 0%, #d65f9f 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: rgb(20, 7, 7);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .stations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .station-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .station-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .station-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .station-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-receiving {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .metric {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .metric-unit {
+            font-size: 0.6em;
+            color: #6b7280;
+            margin-left: 5px;
+        }
+
+        .connection-info {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .connection-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .connection-label {
+            color: #6b7280;
+        }
+
+        .connection-value {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .simulator {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .simulator-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .simulator-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0b1f78 0%, #e35ac8 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(55, 102, 172, 0.4);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .log {
+            background: #1f2937;
+            border-radius: 10px;
+            padding: 15px;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .timestamp {
+            color: #6b7280;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .stations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .simulator-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> Station Météo LoRa</h1>
+            <p>Surveillance en temps réel : Tunis ↔ La Marsa (18 km)</p>
+        </div>
+
+        <div class="stations-grid">
+            <!-- Station Émettrice -->
+            <div class="station-card">
+                <div class="station-header">
+                    <div class="station-name">TUNIS</div>
+                    <div class="status-indicator status-active" id="status-tunis"></div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">Température</div>
+                    <div class="metric-value">
+                        <span id="temp-tunis">--</span>
+                        <span class="metric-unit">°C</span>
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">Humidité</div>
+                    <div class="metric-value">
+                        <span id="hum-tunis">--</span>
+                        <span class="metric-unit">%</span>
+                    </div>
+                </div>
+
+                <div class="connection-info">
+                    <div class="connection-item">
+                        <span class="connection-label">Paquets envoyés</span>
+                        <span class="connection-value" id="packets-sent">0</span>
+                    </div>
+                    <div class="connection-item">
+                        <span class="connection-label">Dernier envoi</span>
+                        <span class="connection-value" id="last-sent">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Station Réceptrice -->
+            <div class="station-card">
+                <div class="station-header">
+                    <div class="station-name"> LA MARSA</div>
+                    <div class="status-indicator status-receiving" id="status-marsa"></div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">Température Reçue</div>
+                    <div class="metric-value">
+                        <span id="temp-marsa">--</span>
+                        <span class="metric-unit">°C</span>
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">Humidité Reçue</div>
+                    <div class="metric-value">
+                        <span id="hum-marsa">--</span>
+                        <span class="metric-unit">%</span>
+                    </div>
+                </div>
+
+                <div class="connection-info">
+                    <div class="connection-item">
+                        <span class="connection-label">RSSI Signal</span>
+                        <span class="connection-value" id="rssi">-- dBm</span>
+                    </div>
+                    <div class="connection-item">
+                        <span class="connection-label">Paquets reçus</span>
+                        <span class="connection-value" id="packets-received">0</span>
+                    </div>
+                    <div class="connection-item">
+                        <span class="connection-label">Distance</span>
+                        <span class="connection-value">18 km</span>
+                    </div>
+                    <div class="connection-item">
+                        <span class="connection-label">Taux réussite</span>
+                        <span class="connection-value" id="success-rate">100%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique -->
+        <div class="chart-container">
+            <div class="chart-title"> Historique des Données (30 dernières minutes)</div>
+            <canvas id="chart"></canvas>
+        </div>
+
+        <!-- Simulateur -->
+        <div class="simulator">
+            <div class="simulator-title"> Simulateur de Transmission</div>
+            <div class="simulator-controls">
+                <button class="btn btn-primary" onclick="startSimulation()">▶ Démarrer Simulation</button>
+                <button class="btn btn-danger" onclick="stopSimulation()">⏹ Arrêter</button>
+            </div>
+            <div class="log" id="log">
+                <div class="log-entry">
+                    <span class="timestamp">[00:00:00]</span>
+                    <span>Système prêt. Appuyez sur "Démarrer" pour lancer la simulation.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Configuration
+        let simulationActive = false;
+        let intervalId = null;
+        let packetsSent = 0;
+        let packetsReceived = 0;
+        
+        // Données pour le graphique
+        let chartData = {
+            labels: [],
+            temperature: [],
+            humidity: []
+        };
+
+        // Initialisation du graphique
+        const ctx = document.getElementById('chart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Température (°C)',
+                        data: chartData.temperature,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Humidité (%)',
+                        data: chartData.humidity,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        function addLog(message) {
+            const log = document.getElementById('log');
+            const now = new Date();
+            const time = now.toLocaleTimeString('fr-TN');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="timestamp">[${time}]</span><span>${message}</span>`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function simulateDataTransmission() {
+            // Générer données aléatoires
+            const temp = (20 + Math.random() * 15).toFixed(1);
+            const hum = (50 + Math.random() * 30).toFixed(0);
+            const rssi = (-95 + Math.random() * 10).toFixed(0);
+            
+            packetsSent++;
+            
+            // Mise à jour station émettrice
+            document.getElementById('temp-tunis').textContent = temp;
+            document.getElementById('hum-tunis').textContent = hum;
+            document.getElementById('packets-sent').textContent = packetsSent;
+            document.getElementById('last-sent').textContent = new Date().toLocaleTimeString('fr-TN');
+            
+            addLog(`📡 TUNIS: Envoi données - Temp: ${temp}°C, Hum: ${hum}%`);
+            
+            // Simuler transmission (95% de réussite)
+            setTimeout(() => {
+                if (Math.random() > 0.05) {
+                    packetsReceived++;
+                    
+                    // Mise à jour station réceptrice
+                    document.getElementById('temp-marsa').textContent = temp;
+                    document.getElementById('hum-marsa').textContent = hum;
+                    document.getElementById('rssi').textContent = rssi + ' dBm';
+                    document.getElementById('packets-received').textContent = packetsReceived;
+                    
+                    const successRate = ((packetsReceived / packetsSent) * 100).toFixed(1);
+                    document.getElementById('success-rate').textContent = successRate + '%';
+                    
+                    addLog(`📶 LA MARSA: Réception OK - RSSI: ${rssi} dBm`);
+                    
+                    // Clignotement LED
+                    const statusMarsa = document.getElementById('status-marsa');
+                    statusMarsa.style.opacity = '1';
+                    setTimeout(() => statusMarsa.style.opacity = '0.5', 500);
+                    
+                    // Mise à jour graphique
+                    const now = new Date().toLocaleTimeString('fr-TN');
+                    chartData.labels.push(now);
+                    chartData.temperature.push(parseFloat(temp));
+                    chartData.humidity.push(parseFloat(hum));
+                    
+                    // Garder seulement 20 derniers points
+                    if (chartData.labels.length > 20) {
+                        chartData.labels.shift();
+                        chartData.temperature.shift();
+                        chartData.humidity.shift();
+                    }
+                    
+                    chart.update();
+                } else {
+                    addLog(`❌ LA MARSA: Paquet perdu - Signal faible`);
+                }
+            }, 500);
+        }
+
+        function startSimulation() {
+            if (simulationActive) return;
+            
+            simulationActive = true;
+            addLog(`✅ Simulation démarrée - Intervalle: 30s`);
+            
+            // Premier envoi immédiat
+            simulateDataTransmission();
+            
+            // Puis toutes les 30 secondes (30000ms)
+            // Pour démo rapide: 5 secondes (5000ms)
+            intervalId = setInterval(simulateDataTransmission, 5000);
+        }
+
+        function stopSimulation() {
+            if (!simulationActive) return;
+            
+            simulationActive = false;
+            clearInterval(intervalId);
+            addLog(`⏹ Simulation arrêtée`);
+        }
+
+        // Animation des LEDs
+        setInterval(() => {
+            const statusTunis = document.getElementById('status-tunis');
+            if (simulationActive) {
+                statusTunis.style.opacity = statusTunis.style.opacity === '1' ? '0.5' : '1';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
